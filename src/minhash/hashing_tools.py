@@ -64,5 +64,3 @@ class HashingManager(object):
                 return True
         except IOError:
             return False
-
-

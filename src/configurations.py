@@ -2,4 +2,4 @@ SIGNATURE_SIZE = 200
 BASE_PRIME = 982451653
 MIN_PRIME = 100
 MAX_PRIME = 1000
-HASH_FUNCTIONS_PATH = 'hash_functions_path/'
+HASH_FUNCTIONS_PATH = 'src/hash_functions_path/'
