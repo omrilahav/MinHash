@@ -1,48 +1,16 @@
-from minhash.feature import MinHashFeature
-from minhash.minhash_metric import MinHashMetric
 from minhash.signature import MinHashSignature
+from feature_extractors.abstract_feature_extractor import AbstractFeature
+from feature_extractors.abstract_feature_extractor import MinHashAbstract
 
 
-class ShingleFeature(MinHashFeature):
+class ShingleFeature(AbstractFeature):
     def __init__(self, shingle):
-        super(ShingleFeature, self).__init__()
-        self.value = shingle
-
-    def hash(self, hashing):
-        hashed = abs(int(hash(self.value)))
-
-        feature_signature = []
-
-        for prime_tuple in hashing.prime_tuples:
-            feature_signature.append(int((hashed * prime_tuple[0] ^ 2 + hashed * prime_tuple[1]) % hashing.base_prime))
-
-        return feature_signature
+        super(ShingleFeature, self).__init__(shingle)
 
 
-class MinHashDocument(MinHashMetric):
+class MinHashDocument(MinHashAbstract):
     def __init__(self, shingles):
-        super(MinHashDocument, self).__init__()
-        self.shingles = shingles
-        self.features = None
-        self.signature = None
-
-    def get_signature(self, signature_size, hashing):
-        if self.signature is None:
-            self.signature = MinHashSignature(signature_size)
-            self.signature.generate(self.get_features(), hashing)
-
-        return self.signature
-
-    def get_features(self):
-        if self.features is None:
-            self.init_features()
-
-        return self.features
-
-    def init_features(self):
-        self.features = []
-        for shingle in self.shingles:
-            self.features.append(ShingleFeature(shingle))
+        super(MinHashDocument, self).__init__(shingles)
 
 
 def extract_shingles(document, shingle_size):
