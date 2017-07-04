@@ -1,4 +1,3 @@
-from minhash.signature import MinHashSignature
 from feature_extractors.abstract_feature_extractor import AbstractFeature
 from feature_extractors.abstract_feature_extractor import MinHashAbstract
 
