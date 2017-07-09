@@ -17,9 +17,11 @@ Omri Lahav
 
 
 ## License
-This project was initially built for the use and studies of the International Cyber Security & Machine Learning Program @ Ben-Gurion University of the Negev, Israel.
+Copyright (C) 2017 Omri Lahav (omrilahav@hotmail.com)
 
-Nonetheless, it can be used freely by any person who wishes to study min-Hash, but not for commercial use.
+All rights reserved.
+
+This software can be used free of charge. Please cite and reference.
 
 
 ## References

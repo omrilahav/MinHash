@@ -1,67 +1,92 @@
+from minhash.hashing_manager import HashingManager
+from shingles_extractors.types.byte import ByteShinglesExtractor
+from minhash.types.bytes_file import BytesMinHash
 from configurations import SIGNATURE_SIZE
-from feature_extractors.document import MinHashDocument, extract_shingles as extract_shingles_from_document
-from minhash.hashing_tools import HashingManager
-from feature_extractors.byte import extract_shingles as extract_byte_shingles_from_raw_document, MinHashBytes
+from shingles_extractors.types.text import TextShinglesExtractor
+from minhash.types.text_file import TextMinHash
 
+from os import listdir
+from os.path import isfile, join
+
+"""
+This example demonstrates how to use min-Hash for multiple purposes in multiple domains.
+The important stuff is to know which ShingleExtractor and which MinHashObject one should
+use for specific domain implementation.
+"""
+
+# Initiating HashingManager to be used in this example
+# (additional details on can be found in HashingManager module)
 HASHING_MANAGER = HashingManager()
+
+# The default Shingle size to use in this example
+# (additional details on Shingle size can be found in MinHashShingle module)
 SHINGLE_SIZE = 4
 
 
-def raw_document_to_signature(filename):
-    shingles = extract_byte_shingles_from_raw_document(filename, shingle_size=SHINGLE_SIZE)
-    min_hash = MinHashBytes(shingles)
-    signature = min_hash.get_signature(SIGNATURE_SIZE, HASHING_MANAGER)
-    return signature
+def file_to_signature(filename):
+    """
+    Convert a given file (raw data) into a min-Hash signature
+    :param filename: The name (plus path) of the file
+    :return: The min-Hash signature of the file
+    """
+    # Open the file
+    input_file = open(filename, "rb")
+    # Extract Shingles from the file using ByteShinglesExtractor
+    shingles = ByteShinglesExtractor.extract_shingles(input_file, SHINGLE_SIZE)
+    # Generate and return a min-Hash signature
+    return BytesMinHash(shingles).get_signature(SIGNATURE_SIZE, HASHING_MANAGER)
 
 
 def document_to_signature(document_path):
+    """
+    Convert a given document (text) into a min-Hash signature
+    :param document_path: The path to the document
+    :return: The min-Hash signature of the document
+    """
+    # Open the file
     document = open(document_path, 'r').read()
-    shingles = extract_shingles_from_document(document, shingle_size=SHINGLE_SIZE)
-    min_hash = MinHashDocument(shingles)
-    signature = min_hash.get_signature(SIGNATURE_SIZE, HASHING_MANAGER)
-    return signature
+    # Extract Shingles from the document using TextShinglesExtractor
+    shingles = TextShinglesExtractor.extract_shingles(document, SHINGLE_SIZE)
+    # Generate and return a min-Hash signature
+    return TextMinHash(shingles).get_signature(SIGNATURE_SIZE, HASHING_MANAGER)
 
 
-def calculate_similarity(signature1_title, signature1, signature2_title, signature2):
-    similarity = signature1.calculate_similarity(signature2)
-    similarity *= 100
+def example(path, function_to_exec):
+    """
+    In this example we are calculating how similar each file in the given path to the first file in that path.
+    The results are printed to the console.
+    :param path: The path for the input files
+    :param function_to_exec: Which of the example functions from the above to execute
+    :return: None
+    """
+    signatures = {}
+    # Get all the files from the path
+    input_files = [f for f in listdir(path) if isfile(join(path, f))]
+    # Generate a min-Hash signature for each file
+    for input_file in input_files:
+        signatures[input_file] = function_to_exec(path + input_file)
 
-    print signature1_title + ' is similar to ' + signature2_title + ' in: ' + str(similarity) + '%'
+    first_filename = signatures.keys()[0]
+    first_file_signature = signatures.values()[0]
+
+    # Calculate how similar each file in the path to first_filename
+    for filename, signature in signatures.iteritems():
+        similarity = signature.calculate_jaccard_coefficient(first_file_signature)
+
+        print '{} is similar to {} in: {}%'.format(
+            filename,
+            first_filename,
+            str(similarity * 100))
 
 
 def main():
-    documents_example()
-    print '\n'
-    bytes_example()
+    data_example_path = 'data_examples/'
 
+    print '\nText Documents Comparison:'
+    example(data_example_path, document_to_signature)
 
-def bytes_example():
-    original_document = raw_document_to_signature('data_examples/document1.txt')
-    original_copy = raw_document_to_signature('data_examples/document1_copy.txt')
-    similar_document2 = raw_document_to_signature('data_examples/document2.txt')
-    similar_document3 = raw_document_to_signature('data_examples/document3.txt')
-    reversed_sentences_document = raw_document_to_signature('data_examples/document_reversed_sentences.txt')
-
-    calculate_similarity('Original RAW Document', original_document, "Original RAW Document's Copy", original_copy)
-    calculate_similarity('Original RAW Document', original_document, "Similar RAW Document 2", similar_document2)
-    calculate_similarity('Original RAW Document', original_document, "Similar RAW Document 3", similar_document3)
-    calculate_similarity('Original RAW Document', original_document, "Reversed Sentences RAW Document",
-                         reversed_sentences_document)
-
-
-def documents_example():
-    original_document = document_to_signature('data_examples/document1.txt')
-    original_copy = document_to_signature('data_examples/document1_copy.txt')
-    similar_document2 = document_to_signature('data_examples/document2.txt')
-    similar_document3 = document_to_signature('data_examples/document3.txt')
-    reversed_sentences_document = document_to_signature('data_examples/document_reversed_sentences.txt')
-
-    calculate_similarity('Original Document', original_document, "Original Document's Copy", original_copy)
-    calculate_similarity('Original Document', original_document, "Similar Document 2", similar_document2)
-    calculate_similarity('Original Document', original_document, "Similar Document 3", similar_document3)
-    calculate_similarity('Original Document', original_document, "Reversed Sentences Document",
-                         reversed_sentences_document)
-
+    print '\nByte Files Comparison:'
+    example(data_example_path, file_to_signature)
 
 if __name__ == '__main__':
     main()
