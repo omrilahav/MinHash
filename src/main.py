@@ -1,6 +1,4 @@
 from minhash.hashing_manager import HashingManager
-from shingles_extractors.types.byte import ByteShinglesExtractor
-from minhash.types.bytes_file import BytesMinHash
 from configurations import SIGNATURE_SIZE
 from shingles_extractors.types.text import TextShinglesExtractor
 from minhash.types.text_file import TextMinHash
@@ -21,20 +19,6 @@ HASHING_MANAGER = HashingManager()
 # The default Shingle size to use in this example
 # (additional details on Shingle size can be found in MinHashShingle module)
 SHINGLE_SIZE = 4
-
-
-def file_to_signature(filename):
-    """
-    Convert a given file (raw data) into a min-Hash signature
-    :param filename: The name (plus path) of the file
-    :return: The min-Hash signature of the file
-    """
-    # Open the file
-    input_file = open(filename, "rb")
-    # Extract Shingles from the file using ByteShinglesExtractor
-    shingles = ByteShinglesExtractor.extract_shingles(input_file, SHINGLE_SIZE)
-    # Generate and return a min-Hash signature
-    return BytesMinHash(shingles).get_signature(SIGNATURE_SIZE, HASHING_MANAGER)
 
 
 def document_to_signature(document_path):
@@ -84,9 +68,6 @@ def main():
 
     print '\nText Documents Comparison:'
     example(data_example_path, document_to_signature)
-
-    print '\nByte Files Comparison:'
-    example(data_example_path, file_to_signature)
 
 if __name__ == '__main__':
     main()
